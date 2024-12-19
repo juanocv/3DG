@@ -29,7 +29,12 @@ void Sphere::create(GLuint program) {
 
       glm::vec3 normal = glm::normalize(position);
 
-      m_vertices.push_back(Vertex{position, normal});
+      float u = phi / (2.0f * glm::pi<float>());
+      float v = theta / glm::pi<float>();
+
+      m_vertices.push_back(Vertex{
+          position, normal, glm::vec2(u, v) // NEW: store texture coordinates
+      });
     }
   }
 
@@ -68,6 +73,7 @@ void Sphere::create(GLuint program) {
   // Retrieve attribute locations
   m_positionLoc = glGetAttribLocation(program, "inPosition");
   m_normalLoc = glGetAttribLocation(program, "inNormal");
+  GLint texCoordLoc = glGetAttribLocation(program, "inTexCoord");
 
   // Set up vertex attribute pointers
   // Position attribute
@@ -90,6 +96,17 @@ void Sphere::create(GLuint program) {
       GL_FALSE,       // Normalized?
       sizeof(Vertex), // Stride (size of Vertex struct)
       reinterpret_cast<void *>(offsetof(Vertex, normal)) // Offset to normal
+  );
+
+  // Texture attribute
+  glEnableVertexAttribArray(texCoordLoc);
+  glVertexAttribPointer(
+      texCoordLoc,    // Attribute location for texCoord
+      2,              // Number of components (u, v)
+      GL_FLOAT,       // Data type
+      GL_FALSE,       // Normalized?
+      sizeof(Vertex), // Stride
+      reinterpret_cast<void *>(offsetof(Vertex, texCoord)) // Offset to texCoord
   );
 
   // Unbind VAO

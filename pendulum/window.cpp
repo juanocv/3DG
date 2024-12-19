@@ -1,10 +1,19 @@
 // window.cpp
 #include "window.hpp"
+#include "abcg.hpp"
 
 glm::vec3 Window::calculateLightDirection() const {
-  // Light direction aligned with the camera's viewing direction
-  // cameraTarget is assumed to be a direction vector
-  return glm::normalize(cameraTarget);
+  // Convert angles to radians
+  float yawRad = glm::radians(lightYaw);
+  float pitchRad = glm::radians(lightPitch);
+
+  // Compute direction vector based on yaw and pitch
+  glm::vec3 dir;
+  dir.x = std::cos(yawRad) * std::cos(pitchRad);
+  dir.y = std::sin(pitchRad);
+  dir.z = std::sin(yawRad) * std::cos(pitchRad);
+
+  return glm::normalize(dir);
 }
 
 float Window::calculateRopeLengthInPixels(const glm::vec3 &ropeStart,
@@ -71,6 +80,7 @@ void Window::onCreate() {
   fragmentShader.source = assetsPath + "fragment_shader.glsl";
   fragmentShader.stage = abcg::ShaderStage::Fragment;
 
+  // Create the OpenGL program
   program = abcg::createOpenGLProgram({vertexShader, fragmentShader});
 
   // Get location of uniform variables
@@ -78,7 +88,34 @@ void Window::onCreate() {
   viewMatrixLoc = glGetUniformLocation(program, "viewMatrix");
   projMatrixLoc = glGetUniformLocation(program, "projMatrix");
   colorLoc = glGetUniformLocation(program, "color");
-  // No need to get 'lightDir' here since we'll set it each frame
+
+  // Load ground texture
+  abcg::OpenGLTextureCreateInfo groundTextureCreateInfo;
+  groundTextureCreateInfo.path =
+      assetsPath + "snow_02_diff_4k.jpg"; // Specify your texture
+  m_groundTexture = abcg::loadOpenGLTexture(groundTextureCreateInfo);
+
+  // Ensure that texture loading succeeded
+  if (m_groundTexture == 0) {
+    throw abcg::Exception("Failed to load ground texture");
+  }
+
+  // Load sphere texture
+  abcg::OpenGLTextureCreateInfo sphereTextureInfo;
+  sphereTextureInfo.path = assetsPath + "majoras_mask_moon.png";
+  m_sphereTexture = abcg::loadOpenGLTexture(sphereTextureInfo);
+
+  if (m_sphereTexture == 0) {
+    throw abcg::Exception("Failed to load sphere texture");
+  }
+
+  // Set texture parameters
+  glBindTexture(GL_TEXTURE_2D, m_groundTexture);
+  glBindTexture(GL_TEXTURE_2D, m_sphereTexture);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+                  GL_LINEAR_MIPMAP_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glBindTexture(GL_TEXTURE_2D, 0);
 
   // Enable depth testing
   glEnable(GL_DEPTH_TEST);
@@ -134,10 +171,21 @@ void Window::onCreate() {
   // Create VBO for ground vertices
   glGenBuffers(1, &groundVBO);
   glBindBuffer(GL_ARRAY_BUFFER, groundVBO);
+
   // Interleave position and normal data
   std::vector<Vertex> groundData;
   for (size_t i = 0; i < groundVertices.size(); ++i) {
-    groundData.push_back(Vertex{groundVertices[i], groundNormals[i]});
+    // Compute u,v based on vertexX, vertexZ
+    // Suppose ground extends -10 to 10 in X and Z:
+    float vertexX = groundVertices[i].x;
+    float vertexZ = groundVertices[i].z;
+    float u = (vertexX + 10.0f) / 20.0f;
+    float v = (vertexZ + 10.0f) / 20.0f;
+
+    groundData.push_back(Vertex{
+        groundVertices[i], groundNormals[i],
+        glm::vec2(u, v) // Assign texture coordinates
+    });
   }
   glBufferData(GL_ARRAY_BUFFER, groundData.size() * sizeof(Vertex),
                groundData.data(), GL_STATIC_DRAW);
@@ -173,6 +221,16 @@ void Window::onCreate() {
       GL_FALSE,        // Normalized?
       sizeof(Vertex),  // Stride (size of Vertex struct)
       reinterpret_cast<void *>(offsetof(Vertex, normal)) // Offset to normal
+  );
+
+  // After setting position and normal pointers, add:
+  GLint groundTexCoordLoc = glGetAttribLocation(program, "inTexCoord");
+  glEnableVertexAttribArray(groundTexCoordLoc);
+  glVertexAttribPointer(
+      groundTexCoordLoc,
+      2, // x and y for texture coordinates
+      GL_FLOAT, GL_FALSE, sizeof(Vertex),
+      reinterpret_cast<void *>(offsetof(Vertex, texCoord)) // Offset to texCoord
   );
 
   // Unbind VAO (optional)
@@ -253,37 +311,45 @@ void Window::onUpdate() {
 }
 
 void Window::onPaint() {
-    // Set the clear color to dark gray
-    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+  // Set the clear color to dark gray
+  glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 
-    // Clear the screen
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  // Clear the screen
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    glUseProgram(program);
+  glUseProgram(program);
 
-    // Set up view and projection matrices
-    m_viewMatrix = glm::lookAt(cameraPosition, cameraPosition + cameraTarget,
-                               glm::vec3(0.0f, 1.0f, 0.0f));
+  // Set up view and projection matrices
+  m_viewMatrix = glm::lookAt(cameraPosition, cameraPosition + cameraTarget,
+                             glm::vec3(0.0f, 1.0f, 0.0f));
 
-    // Use m_viewportSize to calculate the aspect ratio
-    float aspect = static_cast<float>(m_viewportSize.x) / m_viewportSize.y;
-    m_projMatrix = glm::perspective(glm::radians(45.0f), aspect, 0.1f, 100.0f);
+  // Use m_viewportSize to calculate the aspect ratio
+  float aspect = static_cast<float>(m_viewportSize.x) / m_viewportSize.y;
+  m_projMatrix = glm::perspective(glm::radians(45.0f), aspect, 0.1f, 100.0f);
 
-    // Pass matrices to the shader
-    glUniformMatrix4fv(viewMatrixLoc, 1, GL_FALSE, &m_viewMatrix[0][0]);
-    glUniformMatrix4fv(projMatrixLoc, 1, GL_FALSE, &m_projMatrix[0][0]);
+  // Pass matrices to the shader
+  glUniformMatrix4fv(viewMatrixLoc, 1, GL_FALSE, &m_viewMatrix[0][0]);
+  glUniformMatrix4fv(projMatrixLoc, 1, GL_FALSE, &m_projMatrix[0][0]);
 
-    // **Calculate and pass the dynamic light direction**
-    glm::vec3 lightDirection = calculateLightDirection(); // Light aligned with camera
-    glUniform3fv(glGetUniformLocation(program, "lightDir"), 1, &lightDirection[0]);
+  // Calculate and pass the dynamic light direction
+  glm::vec3 lightDirection = calculateLightDirection();
+  GLint lightDirLoc = glGetUniformLocation(program, "lightDir");
+  glUniform3fv(lightDirLoc, 1, &lightDirection.x);
 
-    // Render the pendulum
-    renderPendulum();
+  // Render the sphere with its own texture
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D, m_sphereTexture);
+  GLint samplerLoc = glGetUniformLocation(program, "textureSampler");
+  glUniform1i(samplerLoc, 0);
+  renderPendulum(); // Draw sphere object with m_sphereTexture
 
-    // Render the ground
-    renderGround();
+  // Render the ground with the other texture
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D, m_groundTexture);
+  glUniform1i(samplerLoc, 0);
+  renderGround(); // Draw ground with m_texture
 
-    glUseProgram(0);
+  glUseProgram(0);
 }
 
 void Window::onPaintUI() {
@@ -300,6 +366,10 @@ void Window::onPaintUI() {
       ImGui::SliderInt("Ângulo de Inclinação (°)", &thetaDegrees, 20, 85);
   bool ropeLengthChanged =
       ImGui::SliderInt("Comprimento da Corda (%)", &ropeLength, 1, 200);
+  bool lightYawChanged =
+      ImGui::SliderFloat("Luz Yaw (°)", &lightYaw, -180.0f, 180.0f);
+  bool lightPitchChanged =
+      ImGui::SliderFloat("Luz Pitch (°)", &lightPitch, -89.0f, 89.0f);
   bool animationChanged = ImGui::SliderInt("Velocidade da Animação (%)",
                                            &animationSpeed, 100, 1000);
 
@@ -310,7 +380,8 @@ void Window::onPaintUI() {
   actualRopeLength =
       static_cast<float>(ropeLength) / 100.0f; // Converts percentage to meters
 
-  if (ropeLengthChanged || thetaChanged || animationChanged) {
+  if (ropeLengthChanged || thetaChanged || animationChanged ||
+      lightYawChanged || lightPitchChanged) {
     // Recalculate angular velocity
     float theta = glm::radians(static_cast<float>(thetaDegrees));
     float tanTheta = std::tan(theta);
@@ -350,7 +421,7 @@ void Window::onPaintUI() {
     m_ropeLengthInPixels = calculateRopeLengthInPixels(
         ropeStart, ropeEnd, fixedViewMatrix, fixedProjMatrix);
 
-    // **Calculate m_angularSpeedInPixels using actual theta**
+    // Calculate m_angularSpeedInPixels using actual theta
     m_angularSpeedInPixels = calculateAngularSpeedInPixels(
         angularVelocity, fixedViewMatrix, fixedProjMatrix);
 
@@ -383,18 +454,20 @@ void Window::onDestroy() {
 }
 
 void Window::handleInput() {
-    float cameraSpeed = 2.5f * deltaTime * (static_cast<float>(animationSpeed) / 100.0f);
+  float cameraSpeed =
+      2.5f * deltaTime * (static_cast<float>(animationSpeed) / 100.0f);
 
-    glm::vec3 cameraRight = glm::normalize(glm::cross(cameraTarget, glm::vec3(0.0f, 1.0f, 0.0f)));
+  glm::vec3 cameraRight =
+      glm::normalize(glm::cross(cameraTarget, glm::vec3(0.0f, 1.0f, 0.0f)));
 
-    if (m_forward)
-        cameraPosition += cameraSpeed * cameraTarget;
-    if (m_backward)
-        cameraPosition -= cameraSpeed * cameraTarget;
-    if (m_left)
-        cameraPosition -= cameraRight * cameraSpeed;
-    if (m_right)
-        cameraPosition += cameraRight * cameraSpeed;
+  if (m_forward)
+    cameraPosition += cameraSpeed * cameraTarget;
+  if (m_backward)
+    cameraPosition -= cameraSpeed * cameraTarget;
+  if (m_left)
+    cameraPosition -= cameraRight * cameraSpeed;
+  if (m_right)
+    cameraPosition += cameraRight * cameraSpeed;
 }
 
 void Window::onEvent(SDL_Event const &event) {

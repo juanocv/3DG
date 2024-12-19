@@ -43,6 +43,10 @@ private:
   float cameraYaw{-90.0f};                  // Adjust as necessary
   float cameraPitch{0.0f};
 
+  // Light control
+  float lightYaw{0.0f};   // Horizontal angle of the light (in degrees)
+  float lightPitch{45.0f}; // Vertical angle of the light (in degrees)
+
   // Matrices as member variables
   glm::mat4 m_viewMatrix;
   glm::mat4 m_projMatrix;
@@ -54,6 +58,10 @@ private:
   GLint projMatrixLoc{};
   GLint colorLoc{};
 
+  // Texture
+  GLuint m_groundTexture;
+  GLuint m_sphereTexture{};
+
   // Ground plane variables
   GLuint groundVAO{};
   GLuint groundVBO{};
@@ -64,7 +72,7 @@ private:
   Line m_line;
 
   // Ground plane color
-  glm::vec3 groundColor{0.5f, 0.25f, 0.0f}; // Brown color
+  glm::vec3 groundColor{1.0f, 1.0f, 1.0f}; // Brown color
 
   // Color variable for the ball
   glm::vec3 ballColor{1.0f, 1.0f, 1.0f}; // Default to white color
@@ -88,7 +96,6 @@ private:
   void handleInput();
   void renderPendulum();
   void renderGround();
-  void calculateMeasurements();
 
   // Function declarations
   float calculateRopeLengthInPixels(const glm::vec3 &ropeStart, const glm::vec3 &ropeEnd,

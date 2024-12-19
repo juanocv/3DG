@@ -1,33 +1,34 @@
 #version 300 es
 precision mediump float;
 
+
 in vec3 fragNormal;
 in vec3 fragPosition;
+in vec2 fragTexCoord;
 
 out vec4 outColor;
 
-uniform vec4 color;       // Object color
-uniform vec3 lightDir;    // Dynamic light direction in view space
+uniform sampler2D textureSampler; // The texture sampler
+uniform vec3 lightDir;            // Light direction in view space
+
+uniform vec4 color; // This may still be used for tinting
 
 void main() {
-    // Normalize the interpolated normal
     vec3 normal = normalize(fragNormal);
+    vec3 lDir = normalize(lightDir);
 
-    // Normalize the light direction
-    vec3 lightDirection = normalize(lightDir);
+    float diff = max(dot(normal, lDir), 0.0);
 
-    // Calculate the diffuse component using Lambert's cosine law
-    float diff = max(dot(normal, lightDirection), 0.0);
-
-    // Define ambient lighting factor
-    float ambientStrength = 0.3;
+    float ambientStrength = 0.5;
     vec3 ambient = ambientStrength * color.rgb;
 
-    // Define diffuse lighting factor
     vec3 diffuse = diff * color.rgb;
 
-    // Combine ambient and diffuse components
-    vec3 result = ambient + diffuse;
+    // Sample the texture
+    vec3 texColor = texture(textureSampler, fragTexCoord).rgb;
 
-    outColor = vec4(result, color.a);
+    // Combine texture color with shading
+    vec3 result = (ambient + diffuse) * texColor;
+
+    outColor = vec4(result, 1.0);
 }
