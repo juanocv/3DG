@@ -78,7 +78,7 @@ Tanto o objeto da esfera quanto o chão foram texturizados utilizando a técnica
 
 ### Composição visual da corda e mastro do pêndulo
 > Um dos desafios foi definir como seria feita a composição da corda e mastro que compõe o pêndulo. Inicialmente foi tentado utilizar uma estrutura de cilindro, porém as movimentações ficaram desalinhadas em relação à esfera.
-Por isso foi decidido utilizar uma linha, que apesar de possiur limitações (a espessura máxima no navegador por exemplo), permitiu o alinhamento com as animações.
+Por isso foi decidido utilizar uma linha, que apesar de possuir limitações (a espessura máxima no navegador por exemplo), permitiu o alinhamento com as animações.
 
 ### Cálculo da velocidade angular
 > Outro desafio que tivemos foi realizar o cálculo da velocidade angular da esfera corretamente. Nas primeiras tentativas notamos que a velocidade da esfera não se comportava como devia ao variar o comprimento da corda.
