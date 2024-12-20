@@ -49,8 +49,8 @@ para alterar configurações do pêndulo, como:
 -   Cor da esfera do pêndulo
 
 Adicionalmente, é possível controlar a iluminação geral através das seguintes funcionalidades:
--   Yaw: Ângulo de rotação da iluminação ao longo do eixo Y
--   Pitch: Ângulo de rotação da iluminação ao longo do eixo X 
+-   Ângulo de rotação da iluminação ao longo do eixo Y (Yaw)
+-   Ângulo de rotação da iluminação ao longo do eixo X (Pitch)
 
 ## Implementação
 
