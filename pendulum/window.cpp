@@ -268,7 +268,7 @@ void Window::onPaint() {
   glUniformMatrix4fv(projMatrixLoc, 1, GL_FALSE, &m_projMatrix[0][0]);
 
   // Calculate and pass the dynamic light direction
-  glm::vec3 lightDirection = calculateLightDirection(lightPitch, lightPitch);
+  glm::vec3 lightDirection = calculateLightDirection(lightYaw, lightPitch);
   GLint lightDirLoc = glGetUniformLocation(program, "lightDir");
   glUniform3fv(lightDirLoc, 1, &lightDirection.x);
 

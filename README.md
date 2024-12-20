@@ -18,12 +18,12 @@ movimento circular de um pêndulo ligado a uma corda de comprimento e ângulo va
 
 ## Live demo
 
-Uma versão compilada em WebAssembly está disponível para ser executada em qualquer navegador web neste [link]().
+Uma versão compilada em WebAssembly está disponível para ser executada em qualquer navegador web neste [link](https://juanocv.github.io/3DG/pendulum/).
 
 Também é possível compilar o projeto localmente, seguindo as instruções de [instalação do ABCg](https://hbatagelo.github.io/cg/config.html), clonando o repositório e executando os scripts
 ```build.sh``` ou ```build.bat```, caso esteja no Linux ou Windows respectivamente. Os scripts irão compilar o projeto e criar um executável no diretório ```build```.
 
-Nos [releases]() do repositório providenciamos um binário já compilado para Linux. Para usá-lo basta descompactar o arquivo baixado, navegar para a pasta extraida, rodar o comando ```chmod +x pendulum``` no terminal e por fim
+Nos [releases](https://github.com/juanocv/3DG/releases/tag/v1.0.0) do repositório providenciamos um binário já compilado para Linux. Para usá-lo basta descompactar o arquivo baixado, navegar para a pasta extraida, rodar o comando ```chmod +x pendulum``` no terminal e por fim
 executar o programa com ```./pendulum```.
 
 ## Como Usar
