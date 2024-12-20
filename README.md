@@ -36,7 +36,7 @@ do ABCg. Com o programa em tela cheia é possível utilizar os seguintes control
 -   ```Mouse``` para controlar a direção da câmera, ou configurar o pêndulo no menu com o mouse destravado
 -   ```ESC``` para sair de tela cheia no navegador
 
-As configurações do sistema do pẽndulo, como comprimento e ângulo da corda, podem ser ajustadas a partir da janela pop-up no programa.
+As configurações do sistema do pêndulo, como comprimento e ângulo da corda, podem ser ajustadas a partir da janela pop-up no programa.
 
 ## Funcionalidades
 
