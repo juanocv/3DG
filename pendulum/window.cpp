@@ -279,7 +279,7 @@ void Window::onCreate() {
       ropeStart, ropeEnd, fixedViewMatrix, fixedProjMatrix, m_viewportSize);
 
   m_angularSpeedInPixels = calculateAngularSpeedInPixels(
-      angularVelocity, fixedViewMatrix, fixedProjMatrix, m_viewportSize);
+      angularVelocity, fixedViewMatrix, fixedProjMatrix, theta, actualRopeLength, m_viewportSize);
 
   m_angularSpeedInPixels *= (static_cast<float>(animationSpeed) / 100.0f);
 }
@@ -420,11 +420,11 @@ void Window::onPaintUI() {
 
     // Recalculate rope length in pixels
     m_ropeLengthInPixels = calculateRopeLengthInPixels(
-        ropeStart, ropeEnd, fixedViewMatrix, fixedProjMatrix);
+        ropeStart, ropeEnd, fixedViewMatrix, fixedProjMatrix, m_viewportSize);
 
     // Calculate m_angularSpeedInPixels using actual theta
-    m_angularSpeedInPixels = LightAngularSpeedInPixels(
-        angularVelocity, fixedViewMatrix, fixedProjMatrix);
+    m_angularSpeedInPixels = calculateAngularSpeedInPixels(
+        angularVelocity, fixedViewMatrix, fixedProjMatrix, theta, actualRopeLength,  m_viewportSize);
 
     // Adjust for animation speed
     m_angularSpeedInPixels *= (animationSpeed / 100.0f);

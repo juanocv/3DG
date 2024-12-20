@@ -34,12 +34,14 @@ float calculateRopeLengthInPixels(const glm::vec3 &ropeStart,
 float calculateAngularSpeedInPixels(float angularSpeedRadiansPerSec,
                                     const glm::mat4 &viewMatrix,
                                     const glm::mat4 &projMatrix,
-                                    float thetaDegrees, float actualRopeLength,
+                                    float thetaDegrees, 
+                                    float actualRopeLength,
                                     const glm::ivec2 &viewportSize) {
   float theta = glm::radians(thetaDegrees);
   float r = actualRopeLength * std::sin(theta);
   glm::vec3 center(0.0f, 2.0f, 0.0f);
-  glm::vec3 ballPosition(center.x + r, center.y - actualRopeLength * std::cos(theta), center.z);
+  glm::vec3 ballPosition(
+      center.x + r, center.y - actualRopeLength * std::cos(theta), center.z);
 
   float screenRadius = calculateRopeLengthInPixels(
       center, ballPosition, viewMatrix, projMatrix, viewportSize);
