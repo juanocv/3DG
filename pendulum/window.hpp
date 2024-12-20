@@ -10,6 +10,7 @@
 
 #include "line.hpp"
 #include "sphere.hpp"
+#include "physics.hpp"    // Inclui as funções relacionadas à física
 
 const float gravity{9.81f};
 const float pivotHeight{2.0f};
@@ -91,21 +92,14 @@ private:
   float m_ropeLengthInPixels{};
   float m_angularSpeedInPixels{};
 
-
   // Helper methods
   void handleInput();
   void renderPendulum();
   void renderGround();
 
-  // Function declarations
-  float calculateRopeLengthInPixels(const glm::vec3 &ropeStart, const glm::vec3 &ropeEnd,
-                                  const glm::mat4 &viewMatrix, const glm::mat4 &projMatrix);
-  float calculateAngularSpeedInPixels(float angularSpeedRadiansPerSec,
-                                    const glm::mat4 &viewMatrix,
-                                    const glm::mat4 &projMatrix);
+  // Viewport size
   glm::ivec2 m_viewportSize{getWindowSettings().width,
                             getWindowSettings().height};
-  glm::vec3 calculateLightDirection() const;
 };
 
 #endif

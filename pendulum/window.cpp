@@ -1,8 +1,9 @@
 // window.cpp
 #include "window.hpp"
+#include "physics.hpp"
 #include "abcg.hpp"
 
-glm::vec3 Window::calculateLightDirection() const {
+/* glm::vec3 Window::calculateLightDirection() const {
   // Convert angles to radians
   float yawRad = glm::radians(lightYaw);
   float pitchRad = glm::radians(lightPitch);
@@ -14,9 +15,9 @@ glm::vec3 Window::calculateLightDirection() const {
   dir.z = std::sin(yawRad) * std::cos(pitchRad);
 
   return glm::normalize(dir);
-}
+} */
 
-float Window::calculateRopeLengthInPixels(const glm::vec3 &ropeStart,
+/* float Window::calculateRopeLengthInPixels(const glm::vec3 &ropeStart,
                                           const glm::vec3 &ropeEnd,
                                           const glm::mat4 &viewMatrix,
                                           const glm::mat4 &projMatrix) {
@@ -36,9 +37,9 @@ float Window::calculateRopeLengthInPixels(const glm::vec3 &ropeStart,
 
   // Calculate and return the distance in pixels
   return glm::length(endScreen - startScreen);
-}
+} */
 
-float Window::calculateAngularSpeedInPixels(float angularSpeedRadiansPerSec,
+/* float Window::calculateAngularSpeedInPixels(float angularSpeedRadiansPerSec,
                                             const glm::mat4 &viewMatrix,
                                             const glm::mat4 &projMatrix) {
   // Use the current inclination angle
@@ -65,7 +66,7 @@ float Window::calculateAngularSpeedInPixels(float angularSpeedRadiansPerSec,
   // Angular speed in pixels/sec = radius (in pixels) * angular speed (in
   // radians/sec)
   return screenRadius * angularSpeedRadiansPerSec;
-}
+} */
 
 void Window::onCreate() {
   // Load shaders
@@ -275,10 +276,10 @@ void Window::onCreate() {
   glm::vec3 ropeEnd(x, y, z);
 
   m_ropeLengthInPixels = calculateRopeLengthInPixels(
-      ropeStart, ropeEnd, fixedViewMatrix, fixedProjMatrix);
+      ropeStart, ropeEnd, fixedViewMatrix, fixedProjMatrix, m_viewportSize);
 
   m_angularSpeedInPixels = calculateAngularSpeedInPixels(
-      angularVelocity, fixedViewMatrix, fixedProjMatrix);
+      angularVelocity, fixedViewMatrix, fixedProjMatrix, m_viewportSize);
 
   m_angularSpeedInPixels *= (static_cast<float>(animationSpeed) / 100.0f);
 }
@@ -332,7 +333,7 @@ void Window::onPaint() {
   glUniformMatrix4fv(projMatrixLoc, 1, GL_FALSE, &m_projMatrix[0][0]);
 
   // Calculate and pass the dynamic light direction
-  glm::vec3 lightDirection = calculateLightDirection();
+  glm::vec3 lightDirection = calculateLightDirection(lightPitch, lightPitch);
   GLint lightDirLoc = glGetUniformLocation(program, "lightDir");
   glUniform3fv(lightDirLoc, 1, &lightDirection.x);
 
@@ -422,7 +423,7 @@ void Window::onPaintUI() {
         ropeStart, ropeEnd, fixedViewMatrix, fixedProjMatrix);
 
     // Calculate m_angularSpeedInPixels using actual theta
-    m_angularSpeedInPixels = calculateAngularSpeedInPixels(
+    m_angularSpeedInPixels = LightAngularSpeedInPixels(
         angularVelocity, fixedViewMatrix, fixedProjMatrix);
 
     // Adjust for animation speed
