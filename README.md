@@ -85,5 +85,9 @@ Por isso foi decidido utilizar uma linha, que apesar de possiur limitações (a 
 Isto foi resolvido revisando os cálculos de velocidade baseados no comprimento da corda. A maior dificuldade para atingir este objetivo ocorreu pois normalmente o cálculo da velocidade angular normalmente se dá utilizando
 o comprimento da corda em metros, enquanto aqui utilizamos o comprimento em pixels.
 
-> Outro problema enfrentado, apesar de não relacionado aos assuntos de computação gráfica, foi de não conseguir realizar outro fork do repoditório original do ABCg, devido a limitação do Github na quantidade de forks por conta em cada
+### Implementação da Iluminação
+> Enquanto foi tranquilo implementar as texturas baixadas, tivemos alguns pequenos problemas com a iluminação, mais relacionados ao percentual atribuido à variável que define a iluminação geral do ambiente, o que tornava o ambiente como um todo muito escuro apesar das mudanças de pitch e yaw.
+
+### Re-clonagem de repositório
+> Outro problema enfrentado, apesar de não relacionado aos assuntos de computação gráfica, foi de não conseguir realizar outro fork do repositório original do ABCg, devido a limitação do Github na quantidade de forks por conta em cada
 repositório e ao fato de estarmos realizando o projeto em dupla.
