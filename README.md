@@ -58,11 +58,17 @@ Para facilitar a navegação e separar o código da biblioteca ABCg, os arquivos
 ```pendulum/assets``` estão todos os arquivos relacionados a objetos 3D e texturização.
 
 -  ```main.cpp```: Classe principal do programa, onde é iniciada a janela da aplicação
--  ```window.cpp```: Aqui a janela e os objetos 3D são criados, além de possuir algumas funções para calculos de métricas para serem exibidas (como a velocidade angular pela função ```Window::calculateAngularSpeedInPixels```)
+-  ```window.cpp```: É responsável por toda a lógica de renderização, desde os modelos 3D da esfera até a texturização dos objetos
     -  Aqui também é configurada a UI do programa e é realizada a captura e processamento dos inputs de mouse e teclado, responsáveis pela interatividade
 -  ```line.cpp```: Aqui é definida a estrutura utilizada como base para a corda e para o mastro do pêndulo
 -  ```sphere.cpp```: É responsável pela classe que define a esfera do pêndulo, nela o objeto 3D é criado e carregado
 -  ```fragment_shader.glsl``` e ```vertex_shader.glsl```: São usados para definir os shaders e matriz de projeção da esfera, respectivamente
+-   ```majoras_mask_moon``` e ```snow_02_diff_4k```: São os arquivos de textura utilizados na esfera e chão, e foram obtidos [aqui](https://www.textures-resource.com/nintendo_64/thelegendofzeldamajorasmask/texture/1897/) e [aqui](https://polyhaven.com/a/snow_02), respectivamente.
+
+### Texturização
+
+Tanto o objeto da esfera quanto o chão foram texturizados utilizando a técnica de mapeamento 
+2D, com recurso ```GL_TEXTURE_2D``` do OpenGL.
 
 ## Desafios Enfrentados
 
