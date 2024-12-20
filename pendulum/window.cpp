@@ -1,71 +1,7 @@
 // window.cpp
 #include "window.hpp"
+#include "physics.hpp"
 #include "abcg.hpp"
-
-glm::vec3 Window::calculateLightDirection() const {
-  // Convert angles to radians
-  float yawRad = glm::radians(lightYaw);
-  float pitchRad = glm::radians(lightPitch);
-
-  // Compute direction vector based on yaw and pitch
-  glm::vec3 dir;
-  dir.x = std::cos(yawRad) * std::cos(pitchRad);
-  dir.y = std::sin(pitchRad);
-  dir.z = std::sin(yawRad) * std::cos(pitchRad);
-
-  return glm::normalize(dir);
-}
-
-float Window::calculateRopeLengthInPixels(const glm::vec3 &ropeStart,
-                                          const glm::vec3 &ropeEnd,
-                                          const glm::mat4 &viewMatrix,
-                                          const glm::mat4 &projMatrix) {
-  // Transform ropeStart and ropeEnd to NDC coordinates
-  glm::vec4 startNDC = projMatrix * viewMatrix * glm::vec4(ropeStart, 1.0f);
-  glm::vec4 endNDC = projMatrix * viewMatrix * glm::vec4(ropeEnd, 1.0f);
-
-  // Perform perspective division
-  startNDC /= startNDC.w;
-  endNDC /= endNDC.w;
-
-  // Convert NDC coordinates to screen coordinates
-  glm::vec2 startScreen{(startNDC.x * 0.5f + 0.5f) * m_viewportSize.x,
-                        (1.0f - (startNDC.y * 0.5f + 0.5f)) * m_viewportSize.y};
-  glm::vec2 endScreen{(endNDC.x * 0.5f + 0.5f) * m_viewportSize.x,
-                      (1.0f - (endNDC.y * 0.5f + 0.5f)) * m_viewportSize.y};
-
-  // Calculate and return the distance in pixels
-  return glm::length(endScreen - startScreen);
-}
-
-float Window::calculateAngularSpeedInPixels(float angularSpeedRadiansPerSec,
-                                            const glm::mat4 &viewMatrix,
-                                            const glm::mat4 &projMatrix) {
-  // Use the current inclination angle
-  float theta = glm::radians(static_cast<float>(thetaDegrees));
-
-  // Horizontal radius in world space
-  float r = actualRopeLength * std::sin(theta);
-
-  // Define the center point (pivot point)
-  glm::vec3 center(0.0f, pivotHeight, 0.0f);
-
-  // Position of the pendulum bob at a fixed angle (e.g., angle = 0)
-  float fixedAngle = 0.0f;
-  float x = center.x + r * std::cos(fixedAngle);
-  float z = center.z + r * std::sin(fixedAngle);
-  float y = center.y - actualRopeLength * std::cos(theta);
-
-  glm::vec3 ballPosition(x, y, z);
-
-  // Calculate the screen-space radius
-  float screenRadius =
-      calculateRopeLengthInPixels(center, ballPosition, viewMatrix, projMatrix);
-
-  // Angular speed in pixels/sec = radius (in pixels) * angular speed (in
-  // radians/sec)
-  return screenRadius * angularSpeedRadiansPerSec;
-}
 
 void Window::onCreate() {
   // Load shaders
@@ -275,10 +211,10 @@ void Window::onCreate() {
   glm::vec3 ropeEnd(x, y, z);
 
   m_ropeLengthInPixels = calculateRopeLengthInPixels(
-      ropeStart, ropeEnd, fixedViewMatrix, fixedProjMatrix);
+      ropeStart, ropeEnd, fixedViewMatrix, fixedProjMatrix, m_viewportSize);
 
   m_angularSpeedInPixels = calculateAngularSpeedInPixels(
-      angularVelocity, fixedViewMatrix, fixedProjMatrix);
+      angularVelocity, fixedViewMatrix, fixedProjMatrix, theta, actualRopeLength, m_viewportSize);
 
   m_angularSpeedInPixels *= (static_cast<float>(animationSpeed) / 100.0f);
 }
@@ -332,7 +268,7 @@ void Window::onPaint() {
   glUniformMatrix4fv(projMatrixLoc, 1, GL_FALSE, &m_projMatrix[0][0]);
 
   // Calculate and pass the dynamic light direction
-  glm::vec3 lightDirection = calculateLightDirection();
+  glm::vec3 lightDirection = calculateLightDirection(lightYaw, lightPitch);
   GLint lightDirLoc = glGetUniformLocation(program, "lightDir");
   glUniform3fv(lightDirLoc, 1, &lightDirection.x);
 
@@ -419,11 +355,11 @@ void Window::onPaintUI() {
 
     // Recalculate rope length in pixels
     m_ropeLengthInPixels = calculateRopeLengthInPixels(
-        ropeStart, ropeEnd, fixedViewMatrix, fixedProjMatrix);
+        ropeStart, ropeEnd, fixedViewMatrix, fixedProjMatrix, m_viewportSize);
 
     // Calculate m_angularSpeedInPixels using actual theta
     m_angularSpeedInPixels = calculateAngularSpeedInPixels(
-        angularVelocity, fixedViewMatrix, fixedProjMatrix);
+        angularVelocity, fixedViewMatrix, fixedProjMatrix, theta, actualRopeLength,  m_viewportSize);
 
     // Adjust for animation speed
     m_angularSpeedInPixels *= (animationSpeed / 100.0f);
