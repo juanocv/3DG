@@ -48,6 +48,10 @@ para alterar configurações do pêndulo, como:
 -   Velocidade da animação
 -   Cor da esfera do pêndulo
 
+Adicionalmente, é possível controlar a iluminação geral através das seguintes funcionalidades:
+-   Yaw: Ângulo de rotação da iluminação ao longo do eixo Y
+-   Pitch: Ângulo de rotação da iluminação ao longo do eixo X 
+
 ## Implementação
 
 A aplicação foi implementada utilizando a biblioteca [ABCg](https://github.com/hbatagelo/abcg), desenvolvida pelo professor Harlen Batagelo para o curso de Computação Gráfica na UFABC, e o pipeline gráfico do OpenGL.
